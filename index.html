@@ -273,10 +273,10 @@
         el.textContent = data[key];
       }
       else if (key === "btn-call") {
-        el.href = "tel:" + data[key];
+        el.href = "tel:" + data["tel"];
         el.textContent = "Gọi ngay";
       } else if (key === "zalo") {
-        el.href = "https://zalo.me/" + data[key];
+        el.href = "https://zalo.me/" + data["tel"];
         el.textContent = "Nhắn Zalo";
       } else {
         el.href = data[key];
