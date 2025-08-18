@@ -1,12 +1,12 @@
 {
-    "available_num": "Còn trống 2/5 phòng",
-    "price": "1tr6/tháng",
-    "price_single": "1.600.000 đ",
-    "price_double": "1.700.000 đ",
+    "available_num": "Còn trống 4/5 phòng",
+    "price": "1tr8/tháng",
+    "price_single": "1.800.000 đ",
+    "price_double": "1.900.000 đ",
     "electric": "4.000 đ/kWh",
     "water": "15.000 đ/m³",
-    "owner": "Anh V/Anh",
-    "tel": "0886320720",
+    "owner": "c Oa",
+    "tel": "xcvc",
     "aircon_waterheater": "Đầy đủ",
     "area": "20 m²",
     "cctv": "24/7",
@@ -14,3 +14,4 @@
     "time": "Tự do",
     "wifi": "Free"
 }
+
