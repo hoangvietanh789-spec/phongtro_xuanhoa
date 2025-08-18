@@ -1,6 +1,7 @@
 {
   "available_num": 0,
   "price": 1600000,
+  "price_add": 100000,
   "electric": 3000,
   "water": 15000,
   "owner": "Anh V/Anh",
@@ -17,3 +18,4 @@
   "btn-call": "",
   
 }
+
