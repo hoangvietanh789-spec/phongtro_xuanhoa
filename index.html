@@ -63,9 +63,9 @@
       <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
         <li>Diện tích: <strong id="area">²</strong></li>
         <li>Số lượng: <strong id="available_num"></strong><strong>/5 phòng</strong></li>
-        <li>Wifi: <strong id="wifi"></strong></li>
         <li>Điện: <strong id="electric"></strong></li>
         <li>Nước: <strong id="water"></strong></li>
+        <li>Wifi: <strong id="wifi"></strong></li>
         <li>Giờ giấc: <strong id="time"></strong></li>
         <li>Chỗ để xe: <strong id="parking"></strong></li>
         <li>Nóng lạnh, Điều hòa: <strong id="aircon_waterheater"></strong></li>
@@ -95,13 +95,13 @@
       <h2 class="text-xl font-semibold mb-3">Hình ảnh thực tế</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <!-- Thay REPLACE_FILE_ID_x bằng ID file ảnh trên Google Drive -->
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/6.jpg" alt="Ảnh 1" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/7.jpg" alt="Ảnh 2" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/3.jpg" alt="Ảnh 3" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/4.jpg" alt="Ảnh 4" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/5.jpg" alt="Ảnh 5" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/1.jpg" alt="Ảnh 6" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/2.jpg" alt="Ảnh 7" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/6.jpg" alt="Đường 1" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/7.jpg" alt="Đường 2" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/1.jpg" alt="Hành lang" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/4.jpg" alt="Cửa ra" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/2.jpg" alt="Cửa vào" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/3.jpg" alt="Bếp gần" onclick="openLightbox(this.src)" />
+        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/5.jpg" alt="Vệ sinh" onclick="openLightbox(this.src)" />
       </div>
     </section>
 
@@ -231,76 +231,57 @@
   </script>
 
 <script>
-const basePrice = 1600000; // Giá chuẩn theo "price", ví dụ 1.600.000
-const data = {
-  "available_num": 0,
-  "electric": 3000,
-  "water": 15000,
-  "owner": "Anh V/Anh",
-  "tel": "0886320720",
-  "aircon_waterheater": "Đầy đủ",
-  "area": "20 m²",
-  "price_single": basePrice,
-  "price_double": basePrice + 100000,
-  "status_single": "",
-  "status_double": "",
-  "parking": "Hành lang rộng 2m thoải mái",
-  "price": "", // sẽ tính bên dưới
-  "time": "Tự do",
-  "cctv": "24/7",  
-  "wifi": "Free",
-  "zalo": "", // sẽ tính bên dưới
-  "btn-call": "" // sẽ tính bên dưới
-};
+const dataUrl = "https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/data.json";
 
-// Cập nhật các thẻ theo key
-Object.keys(data).forEach(key => {
-  const el = document.getElementById(key);
-  if (!el) return;
+fetch(dataUrl)
+  .then(res => res.json())
+  .then(data => {
+    const basePrice = data.price;
+    const priceSingle = basePrice;
+    const priceDouble = basePrice + 100000;
 
-  if (el.tagName === "A") {
-    if (key === "tel") {
-      el.href = "tel:" + data[key];
-      el.textContent = data[key];
-    } else if (key === "btn-call") {
-      el.href = "tel:" + data["tel"];
-      el.textContent = "Gọi ngay";
-    } else if (key === "zalo") {
-      el.href = "https://zalo.me/" + data["tel"];
-      el.textContent = "Nhắn Zalo";
-    } else {
-      el.href = data[key];
-      el.textContent = data[key];
+    // Table giá
+    document.getElementById("price_single").textContent = priceSingle.toLocaleString("vi-VN") + " đ";
+    document.getElementById("price_double").textContent = priceDouble.toLocaleString("vi-VN") + " đ";
+
+    // Giá nổi bật
+    function formatPriceHighlight(price){
+      const millions = Math.floor(price / 1000000);
+      const hundredThousands = Math.round((price % 1000000) / 100000);
+      return `${millions}tr${hundredThousands}`;
     }
-  } else {
-    el.textContent = data[key];
-  }
-});
+    const priceText = (data.available_num > 0) 
+      ? `${formatPriceHighlight(priceSingle)}/tháng`
+      : `${formatPriceHighlight(priceSingle)}/tháng - Tạm hết`;
 
-// Hiển thị giá single và double với dấu phân tách nghìn
-document.getElementById("price_single").textContent = data.price_single.toLocaleString("vi-VN") + " đ";
-document.getElementById("price_double").textContent = data.price_double.toLocaleString("vi-VN") + " đ";
-document.getElementById("electric").textContent = data.electric.toLocaleString("vi-VN") + " đ/kWh";
-document.getElementById("water").textContent = data.water.toLocaleString("vi-VN") + " đ/m³";
+    const priceEl = document.getElementById("price");
+    priceEl.textContent = priceText;
 
-// Hiển thị giá nổi bật dạng 1tr6/tháng dựa trên price_single
-const priceInTrieu = Math.floor(data.price_single / 1000000); // phần triệu
-const priceRemain = Math.round((data.price_single % 1000000) / 100000); // phần trăm trăm nghìn
+    // Trạng thái phòng
+    const statusText = (data.available_num > 0) ? "Còn phòng" : "Tạm hết";
+    const statusClass = (data.available_num > 0) ? "px-2 py-1 rounded bg-emerald-100 text-emerald-700" : "px-2 py-1 rounded bg-amber-100 text-amber-700";
+    document.getElementById("status_single").textContent = statusText;
+    document.getElementById("status_single").className = statusClass;
+    document.getElementById("status_double").textContent = statusText;
+    document.getElementById("status_double").className = statusClass;
 
-// Cập nhật giá và trạng thái lên đầu
-const priceText = (data.available_num > 0) ? `${priceInTrieu}tr${priceRemain}/tháng` : `${priceInTrieu}tr${priceRemain}/tháng - Tạm hết`
-document.getElementById("price").textContent = priceText;
-
-// Cập nhật trạng thái phòng
-const statusText = (data.available_num > 0) ? "Còn phòng" : "Tạm hết";
-const statusClass = (data.available_num > 0) ? "px-2 py-1 rounded bg-emerald-100 text-emerald-700" : "px-2 py-1 rounded bg-amber-100 text-amber-700";
-
-document.getElementById("status_single").textContent = statusText;
-document.getElementById("status_single").className = statusClass;
-
-document.getElementById("status_double").textContent = statusText;
-document.getElementById("status_double").className = statusClass;
+    // Gán thông tin chi tiết
+    document.getElementById("area").textContent = data.area;
+    document.getElementById("available_num").textContent = data.available_num;
+    document.getElementById("wifi").textContent = data.wifi;
+    document.getElementById("electric").textContent = data.electric.toLocaleString("vi-VN") + " đ/kWh";
+    document.getElementById("water").textContent = data.water.toLocaleString("vi-VN") + " đ/m³";
+    document.getElementById("time").textContent = data.time;
+    document.getElementById("parking").textContent = data.parking;
+    document.getElementById("aircon_waterheater").textContent = data.aircon_waterheater;
+    document.getElementById("cctv").textContent = data.cctv;
+    document.getElementById("owner").textContent = data.owner;
+    document.getElementById("tel").href = "tel:" + data.tel;
+    document.getElementById("tel").textContent = data.tel;
+    document.getElementById("btn-call").href = "tel:" + data.tel;
+    document.getElementById("zalo").href = "https://zalo.me/" + data.tel;
+  })
+  .catch(err => console.error("Không tải được dữ liệu JSON:", err));
 </script>
-
 </body>
 </html>
