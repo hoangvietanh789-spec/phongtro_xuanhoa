@@ -73,7 +73,7 @@
       <h2 class="text-xl font-semibold mb-3">Thông tin phòng</h2>
       <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
         <li>Diện tích: <strong id="area">²</strong></li>
-        <li>Số lượng: <strong id="available_num"></strong>/5 phòng</li>
+        <li>Số lượng: <strong id="available_num"></strong><strong>/5 phòng</strong></li>
         <li>Wifi: <strong id="wifi"></strong></li>
         <li>Điện: <strong id="electric"></strong></li>
         <li>Nước: <strong id="water"></strong></li>
@@ -134,13 +134,13 @@
               <td class="p-3">Ở 01 mình</td>
               <td class="p-3">20 m²</td>
               <td class="p-3" id="price_single"></td>
-              <td class="p-3"><span id="status_single" class="px-2 py-1 rounded bg-emerald-100 text-emerald-700">Còn phòng</span></td>
+              <td class="p-3"><span id="status_single" class ="px-2 py-1 rounded bg-emerald-100 text-emerald-700"></span></td>
             </tr>
             <tr class="border-b">
               <td class="p-3">Ở 02 người</td>
               <td class="p-3">20 m²</td>
               <td class="p-3" id="price_double"></td>
-              <td class="p-3"><span id="status_double" class="px-2 py-1 rounded bg-emerald-100 text-emerald-700">Còn phòng</span></td>
+              <td class="p-3"><span id="status_double" class ="px-2 py-1 rounded bg-emerald-100 text-emerald-700"></span></td>
             </tr>
           </tbody>
         </table>
@@ -242,52 +242,74 @@
   </script>
 
 <script>
-  const data = {
-    "aircon_waterheater": "Đầy đủ",
-    "area": "20 m²",
-    "available_num": 2,
-    "status_single": "1",
-    "status_double": "1"
-    "cctv": "24/7",
-    "electric": "3.000 đ/kWh",
-    "owner": "Anh V/Anh",
-    "parking": "Hành lang 2m rộng rãi",
-    "price": "1tr6/tháng",
-    "price_single": "1.600.000 đ",
-    "price_double": "1.700.000 đ",
-    "tel": "0886320720",
-    "time": "Tự do",
-    "water": "15.000 đ/m³",
-    "wifi": "Free",
-    "zalo": "xx",
-    "btn-call": "Gọi ngay"
-  };
+const basePrice = 1600000; // Giá chuẩn theo "price", ví dụ 1.600.000
+const data = {
+  "available_num": 2,
+  "electric": 3000,
+  "water": 15000,
+  "owner": "Anh V/Anh",
+  "tel": "0886320720",
+  "aircon_waterheater": "Đầy đủ",
+  "area": "20 m²",
+  "price_single": basePrice,
+  "price_double": basePrice + 100000,
+  "status_single": "",
+  "status_double": "",
+  "parking": "Hành lang rộng 2m thoải mái",
+  "price": "", // sẽ tính bên dưới
+  "time": "Tự do",
+  "cctv": "24/7",  
+  "wifi": "Free",
+  "zalo": "", // sẽ tính bên dưới
+  "btn-call": "" // sẽ tính bên dưới
+};
 
-  // Vòng lặp tự động cập nhật tất cả thẻ có id trùng key
-  Object.keys(data).forEach(key => {
-    const el = document.getElementById(key);
-    if (!el) return;
+// Cập nhật các thẻ theo key
+Object.keys(data).forEach(key => {
+  const el = document.getElementById(key);
+  if (!el) return;
 
-    if (el.tagName === "A") {
-      // Nếu là link tel hoặc zalo
-      if (key === "tel") {
-        el.href = "tel:" + data[key];
-        el.textContent = data[key];
-      }
-      else if (key === "btn-call") {
-        el.href = "tel:" + data["tel"];
-        el.textContent = "Gọi ngay";
-      } else if (key === "zalo") {
-        el.href = "https://zalo.me/" + data["tel"];
-        el.textContent = "Nhắn Zalo";
-      } else {
-        el.href = data[key];
-        el.textContent = data[key];
-      }
+  if (el.tagName === "A") {
+    if (key === "tel") {
+      el.href = "tel:" + data[key];
+      el.textContent = data[key];
+    } else if (key === "btn-call") {
+      el.href = "tel:" + data["tel"];
+      el.textContent = "Gọi ngay";
+    } else if (key === "zalo") {
+      el.href = "https://zalo.me/" + data["tel"];
+      el.textContent = "Nhắn Zalo";
     } else {
+      el.href = data[key];
       el.textContent = data[key];
     }
-  });
+  } else {
+    el.textContent = data[key];
+  }
+});
+
+// Hiển thị giá single và double với dấu phân tách nghìn
+document.getElementById("price_single").textContent = data.price_single.toLocaleString("vi-VN") + " đ";
+document.getElementById("price_double").textContent = data.price_double.toLocaleString("vi-VN") + " đ";
+document.getElementById("electric").textContent = data.electric.toLocaleString("vi-VN") + " đ/kWh";
+document.getElementById("water").textContent = data.water.toLocaleString("vi-VN") + " đ/m³";
+
+// Hiển thị giá nổi bật dạng 1tr6/tháng dựa trên price_single
+const priceInTrieu = Math.floor(data.price_single / 1000000); // phần triệu
+const priceRemain = Math.round((data.price_single % 1000000) / 100000); // phần trăm trăm nghìn
+document.getElementById("price").textContent = `${priceInTrieu}tr${priceRemain}/tháng`;
+
+// Cập nhật trạng thái phòng
+const statusText = (data.available_num > 0) ? "Còn phòng" : "Tạm hết";
+const statusClass = (data.available_num > 0) ? 
+    "px-2 py-1 rounded bg-emerald-100 text-emerald-700" : 
+    "px-2 py-1 rounded bg-amber-100 text-amber-700";
+
+document.getElementById("status_single").textContent = statusText;
+document.getElementById("status_single").className = statusClass;
+
+document.getElementById("status_double").textContent = statusText;
+document.getElementById("status_double").className = statusClass;
 </script>
 
 </body>
