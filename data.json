@@ -1,11 +1,11 @@
 {
-  "available_num": 0,
-  "price": 1800000,
-  "price_add": 200000,
-  "electric": 5000,
+  "available_num": 2,
+  "price": 1600000,
+  "price_add": 100000,
+  "electric": 3000,
   "water": 15000,
   "owner": "Anh V/Anh",
-  "tel": "08863dfdf20720",
+  "tel": "0886320720",
   "aircon_waterheater": "Đầy đủ",
   "area": "20 m²",
   "price_single": 0,
@@ -17,4 +17,5 @@
   "zalo": "",
   "btn-call": "" 
 }
+
 
