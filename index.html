@@ -271,6 +271,9 @@
       if (key === "tel") {
         el.href = "tel:" + data[key];
         el.textContent = data[key];
+      else if (key === "btn-call") {
+        el.href = "tel:" + data[key];
+        el.textContent = "Gọi ngay";
       } else if (key === "zalo") {
         el.href = "https://zalo.me/" + data[key];
         el.textContent = "Nhắn Zalo";
