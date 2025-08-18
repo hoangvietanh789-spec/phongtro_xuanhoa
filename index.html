@@ -45,22 +45,11 @@
             Cách: <span id="addr-text">Sư phạm II 800m, Việt Xô 600m, Cơ điện 500m.</span>
           </p>
         </div>
-        <!-- Nút giá + chỉ đường -->
+        <!-- Nút giá -->
         <div class="flex w-full md:w-auto justify-between gap-4">
           <span class="flex-1 text-center badge inline-flex items-center justify-center bg-blue-700 text-white px-3 py-1.5 rounded-full text-sm">
             <strong id="price" class="text-lg"></strong>
           </span>
-          <!-- <a id="map-link" target="_blank" rel="noopener" 
-             href="https://maps.app.goo.gl/LKivNXrDmMo5RSo4A" 
-             class="flex-1 text-center inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-full">
-            <svg xmlns="http://www.w3.org /2000/svg" viewBox="0 0 24 24" fill="currentColor" 
-                 class="w-5 h-5">
-              <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7Zm0 
-                       9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 
-                       1.12 2.5 2.5S13.38 11.5 12 11.5Z"/>
-            </svg>
-            Chỉ đường -->
-          </a>
         </div>
       </div>
     </div>
@@ -244,7 +233,7 @@
 <script>
 const basePrice = 1600000; // Giá chuẩn theo "price", ví dụ 1.600.000
 const data = {
-  "available_num": 2,
+  "available_num": 0,
   "electric": 3000,
   "water": 15000,
   "owner": "Anh V/Anh",
@@ -297,13 +286,14 @@ document.getElementById("water").textContent = data.water.toLocaleString("vi-VN"
 // Hiển thị giá nổi bật dạng 1tr6/tháng dựa trên price_single
 const priceInTrieu = Math.floor(data.price_single / 1000000); // phần triệu
 const priceRemain = Math.round((data.price_single % 1000000) / 100000); // phần trăm trăm nghìn
-document.getElementById("price").textContent = `${priceInTrieu}tr${priceRemain}/tháng`;
+
+// Cập nhật giá và trạng thái lên đầu
+const priceText = (data.available_num > 0) ? `${priceInTrieu}tr${priceRemain}/tháng` : `${priceInTrieu}tr${priceRemain}/tháng - Tạm hết`
+document.getElementById("price").textContent = priceText;
 
 // Cập nhật trạng thái phòng
 const statusText = (data.available_num > 0) ? "Còn phòng" : "Tạm hết";
-const statusClass = (data.available_num > 0) ? 
-    "px-2 py-1 rounded bg-emerald-100 text-emerald-700" : 
-    "px-2 py-1 rounded bg-amber-100 text-amber-700";
+const statusClass = (data.available_num > 0) ? "px-2 py-1 rounded bg-emerald-100 text-emerald-700" : "px-2 py-1 rounded bg-amber-100 text-amber-700";
 
 document.getElementById("status_single").textContent = statusText;
 document.getElementById("status_single").className = statusClass;
