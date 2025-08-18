@@ -153,65 +153,118 @@
   </footer>
 
   <!-- Lightbox -->
-  <div id="lightbox" onclick="closeLightbox()"><img alt="preview" /></div>
+  <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 flex-col items-center justify-center" style="display:none;" onclick="if(event.target.id==='lightbox'){closeLightbox()}">
+    <img id="lightbox-img" alt="preview" class="max-h-[80vh] max-w-[90vw] object-contain" />
+    <div id="lightbox-controls" class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-4 text-white">
+      <button onclick="prevImage(event)" class="bg-black/50 px-3 py-1 rounded-lg">⟨ Trước</button>
+      <span id="lightbox-counter" class="text-sm"></span>
+      <button onclick="nextImage(event)" class="bg-black/50 px-3 py-1 rounded-lg">Tiếp ⟩</button>
+      <button onclick="toggleSlideshow(event)" id="slideshow-btn" class="bg-black/50 px-3 py-1 rounded-lg">⏸</button>
+    </div>
+    <div id="progress-bar" class="absolute bottom-2 left-0 h-1 bg-emerald-400" style="width:0%"></div>
+  </div>
 
-  <!-- JSON-LD (không bắt buộc, tốt cho SEO) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Offer",
-    "itemOffered": {
-      "@type": "Apartment",
-      "name": "Phòng trọ cho thuê",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Mầm non Xuân Hòa",
-        "addressLocality": "Phường Xuân Hòa",
-        "addressRegion": "Phú Thọ",
-        "addressCountry": "VN"
-      }
-    },
-    "priceCurrency": "VND",
-    "price": "1700000",
-    "availability": "https://schema.org/InStock",
-    "url": "https://example.com/phong-tro-abc"
-  }
-  </script>
-
-  <!-- JS nhỏ để tự động năm hiện tại + lightbox -->
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const images = Array.from(document.querySelectorAll("section img.cursor-zoom-in")).map(img => img.src);
+    let currentIndex = 0;
+    let slideshowInterval = null;
+    let progressInterval = null;
+    let progress = 0;
+    const duration = 5000; // 5s mỗi ảnh
+
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    const lbCounter = document.getElementById('lightbox-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const slideshowBtn = document.getElementById('slideshow-btn');
+
+    function updateLightbox(){
+      lbImg.src = images[currentIndex];
+      lbCounter.textContent = `Ảnh ${currentIndex+1}/${images.length}`;
+      resetProgress();
+    }
+
     function openLightbox(src){
-      const lb = document.getElementById('lightbox');
-      lb.querySelector('img').src = src;
-      lb.classList.add('show');
+      currentIndex = images.indexOf(src);
+      lb.style.display = "flex";
+      updateLightbox();
+      startSlideshow();
     }
+
     function closeLightbox(){
-      document.getElementById('lightbox').classList.remove('show');
+      lb.style.display = "none";
+      stopSlideshow();
     }
+
+    function nextImage(e){
+      e?.stopPropagation();
+      currentIndex = (currentIndex + 1) % images.length;
+      updateLightbox();
+    }
+
+    function prevImage(e){
+      e?.stopPropagation();
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      updateLightbox();
+    }
+
+    function startSlideshow(){
+      stopSlideshow();
+      slideshowInterval = setInterval(nextImage, duration);
+      progressInterval = setInterval(updateProgress, 50);
+      slideshowBtn.textContent = "⏸";
+    }
+
+    function stopSlideshow(){
+      clearInterval(slideshowInterval);
+      clearInterval(progressInterval);
+      slideshowInterval = null;
+      progressInterval = null;
+      progressBar.style.width = "0%";
+    }
+
+    function toggleSlideshow(e){
+      e.stopPropagation();
+      if(slideshowInterval){
+        stopSlideshow();
+        slideshowBtn.textContent = "▶";
+      } else {
+        startSlideshow();
+      }
+    }
+
+    function resetProgress(){
+      progress = 0;
+      progressBar.style.width = "0%";
+    }
+
+    function updateProgress(){
+      progress += 50;
+      const percent = (progress/duration)*100;
+      progressBar.style.width = percent + "%";
+      if(progress >= duration) resetProgress();
+    }
+
+    // Keyboard controls
+    document.addEventListener("keydown", e=>{
+      if(lb.style.display === "flex"){
+        if(e.key==="Escape") closeLightbox();
+        if(e.key==="ArrowRight") nextImage();
+        if(e.key==="ArrowLeft") prevImage();
+      }
+    });
+
+    // Swipe trên mobile
+    let touchStartX = 0;
+    lb.addEventListener("touchstart", e=>{
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    lb.addEventListener("touchend", e=>{
+      let diff = e.changedTouches[0].screenX - touchStartX;
+      if(diff > 50) prevImage();
+      if(diff < -50) nextImage();
+    });
   </script>
 
-  <!-- HƯỚNG DẪN NHANH (xóa sau khi điền xong) -->
-  <!--
-  1) Ảnh Google Drive:
-     - Lấy ID file từ link chia sẻ dạng: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-     - Nhúng ảnh bằng: https://drive.google.com/uc?export=view&id=FILE_ID
-     - Thay REPLACE_HERO_FILE_ID, REPLACE_FILE_ID_1..4 bằng ID thật.
-
-  2) Link định vị Google:
-     - Nếu có tọa độ: dùng https://www.google.com/maps?q=LAT,LNG
-     - Nếu có Place ID: dùng https://www.google.com/maps?cid=PLACE_CID (nếu biết)
-     - Hoặc dùng link chia sẻ từ ứng dụng Google Maps.
-     - Cập nhật cả #map-link và #btn-map.
-
-  3) Giá trọ & thông tin:
-     - Cập nhật #price, bảng giá, diện tích, điện/nước theo thực tế.
-
-  4) Liên hệ:
-     - Cập nhật số điện thoại (thuộc tính href="tel:..."), Zalo (https://zalo.me/SDT), Facebook.
-
-  5) Nhúng vào Zalo OA/Facebook/Website:
-     - Có thể đăng HTML này lên hosting miễn phí (Netlify, Vercel, v.v.) rồi chia sẻ link.
-  -->
 </body>
 </html>
