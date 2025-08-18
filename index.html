@@ -48,7 +48,7 @@
         <!-- Nút giá + chỉ đường -->
         <div class="flex w-full md:w-auto justify-between gap-4">
           <span class="flex-1 text-center badge inline-flex items-center justify-center bg-blue-700 text-white px-3 py-1.5 rounded-full text-sm">
-            <strong id="price" class="text-lg">1tr6/tháng</strong>
+            <strong id="price" class="text-lg"></strong>
           </span>
           <!-- <a id="map-link" target="_blank" rel="noopener" 
              href="https://maps.app.goo.gl/LKivNXrDmMo5RSo4A" 
@@ -72,15 +72,15 @@
     <section class="card bg-white p-5 md:col-span-2">
       <h2 class="text-xl font-semibold mb-3">Thông tin phòng</h2>
       <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-        <li>Diện tích: <strong id="area">20 m²</strong></li>
-        <li>Số lượng: <strong id="available_num">Còn trống 2/5 phòng</strong></li>
-        <li>Wifi: <strong id="wifi">Free</strong></li>
-        <li>Điện: <strong id="electric">3.000 đ/kWh</strong></li>
-        <li>Nước: <strong id="water">15.000 đ/m³</strong></li>
-        <li>Giờ giấc: <strong id="time">Tự do</strong></li>
-        <li>Chỗ để xe: <strong id="parking">Hành lang 2m rộng rãi</strong></li>
-        <li>Nóng lạnh, Điều hòa: <strong id="aircon_waterheater">Đầy đủ</strong></li>
-        <li>Camera an ninh: <strong id="cctv">24/7</strong></li>
+        <li>Diện tích: <strong id="area">²</strong></li>
+        <li>Số lượng: <strong id="available_num"></strong></li>
+        <li>Wifi: <strong id="wifi"></strong></li>
+        <li>Điện: <strong id="electric"></strong></li>
+        <li>Nước: <strong id="water"></strong></li>
+        <li>Giờ giấc: <strong id="time"></strong></li>
+        <li>Chỗ để xe: <strong id="parking"></strong></li>
+        <li>Nóng lạnh, Điều hòa: <strong id="aircon_waterheater"></strong></li>
+        <li>Camera an ninh: <strong id="cctv"></strong></li>
       </ul>
       <p class="mt-4">Không chung chủ. Tiện nghi nóng lạnh, điều hòa, giường, khu bếp, wifi, hành lang để xe phơi phóng rộng rãi, camera an ninh. Khu dân cư yên tĩnh, văn minh.</p>
     </section>
@@ -133,13 +133,13 @@
             <tr class="border-b">
               <td class="p-3">Ở 01 mình</td>
               <td class="p-3">20 m²</td>
-              <td class="p-3" id="price_single">1.600.000 đ</td>
+              <td class="p-3" id="price_single"></td>
               <td class="p-3"><span class="px-2 py-1 rounded bg-emerald-100 text-emerald-700">Còn phòng</span></td>
             </tr>
             <tr class="border-b">
               <td class="p-3">Ở 02 người</td>
               <td class="p-3">20 m²</td>
-              <td class="p-3" id="price_double">1.700.000 đ</td>
+              <td class="p-3" id="price_double"></td>
               <td class="p-3"><span class="px-2 py-1 rounded bg-amber-100 text-amber-700">Còn phòng</span></td>
             </tr>
           </tbody>
@@ -179,8 +179,7 @@
   <footer class="max-w-5xl mx-auto p-6 text-center text-sm text-slate-500">
     © <span id="year"></span> Phòng trọ Xuân Hòa - Sư phạm II, Việt Xô, Cơ Điện
   </footer>
-  
-<!-- Light box load và slide ảnh -->
+
    <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 flex-col items-center justify-center" style="display:none;" onclick="if(event.target.id==='lightbox'){closeLightbox()}">
     <img id="lightbox-img" alt="preview" class="max-h-[80vh] max-w-[90vw] object-contain" />
     <div id="lightbox-controls" class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-4 text-white">
@@ -189,6 +188,7 @@
       <button onclick="nextImage(event)" class="bg-black/50 px-3 py-1 rounded-lg">Tiếp ⟩</button>
     </div>
   </div>
+
   <script>
     const images = Array.from(document.querySelectorAll("section img.cursor-zoom-in")).map(img => img.src);
     let currentIndex = 0;
@@ -241,24 +241,26 @@
     });
   </script>
 
-<!-- Cập nhật thông tin -->
 <script>
   const data = {
+    "aircon_waterheater": "Đầy đủ",
+    "area": "20 m²",
     "available_num": "Còn trống 2/5 phòng",
+    "cctv": "24/7",
+    "electric": "3.000 đ/kWh",
+    "owner": "Anh V/Anh",
+    "parking": "Hành lang 2m rộng rãi",
     "price": "1tr6/tháng",
-    "price_single": "1.600asdfdsa.000 đ",
-    "price_double": "1.7asdfasdf00.000 đ",
-    "electric": "3.000asdfasdf đ/kWh",
-    "water": "15.0asdfasdf00 đ/m³",
-    "owner": "Anhasfasdf V/Anh",
-    "tel": "08863asfasdf20720",
-    "aircon_waterheater": "Đàyadsfasdf đủ",
-    "area": "20 ádfasdfm²",
-    "cctv": "24asdf7",
-    "parking": "ádfas lang 2m rộng rãi",
-    "time": "Tự ádfasdfdo",
-    "wifi": "Frasdfsadfee"
-};
+    "price_single": "1.600.000 đ",
+    "price_double": "1.700.000 đ",
+    "tel": "0886320720",
+    "time": "Tự do",
+    "water": "15.000 đ/m³",
+    "wifi": "Free",
+    "zalo": "0886320720",
+    "btn-call": "Gọi ngay"
+  };
+
   // Vòng lặp tự động cập nhật tất cả thẻ có id trùng key
   Object.keys(data).forEach(key => {
     const el = document.getElementById(key);
@@ -269,6 +271,7 @@
       if (key === "tel") {
         el.href = "tel:" + data[key];
         el.textContent = data[key];
+      }
       else if (key === "btn-call") {
         el.href = "tel:" + data[key];
         el.textContent = "Gọi ngay";
