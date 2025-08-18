@@ -1,5 +1,5 @@
 {
-  "available_num": 0,
+  "available_num": 2,
   "price": 1600000,
   "price_add": 100000,
   "electric": 3000,
@@ -17,6 +17,7 @@
   "zalo": "",
   "btn-call": "" 
 }
+
 
 
 
