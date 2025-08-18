@@ -297,47 +297,46 @@
     });
   </script>
 
-  <script>
-    const jsonUrl = "https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/data.json";
+<script>
+  const data = {
+    "aircon_waterheater": "Đầy đủ",
+    "area": "20 m²",
+    "available_num": "Còn trống 2/5 phòng",
+    "cctv": "24/7",
+    "electric": "3.000 đ/kWh",
+    "owner": "Anh V/Anh",
+    "parking": "Hành lang 2m rộng rãi",
+    "price": "1tr6/tháng",
+    "price_single": "1.600.000 đ",
+    "price_double": "1.700.000 đ",
+    "tel": "0886320720",
+    "time": "Tự do",
+    "water": "15.000 đ/m³",
+    "wifi": "Free",
+    "zalo": "0886320720",
+    "btn-call": "Gọi ngay"
+  };
+  // Vòng lặp tự động cập nhật tất cả thẻ có id trùng key
+  Object.keys(data).forEach(key => {
+    const el = document.getElementById(key);
+    if (!el) return;
 
-    fetch(jsonUrl)
-      .then(response => response.json())
-      .then(data => {
-        const keys = [
-          "aircon_waterheater", "area", "available_num", "cctv", "electric",
-          "owner", "parking", "price",  "price_single", "price_double",
-          "tel", "time", "water", "wifi", "zalo", "btn-call"
-        ];
-
-        keys.forEach(key => {
-          const el = document.getElementById(key);
-          if(el){
-            if(el.tagName === "A") {
-              if(key === "tel") {
-                el.href = "tel:" + data["tel"];
-                el.target ="_blank"
-              } 
-              else if(key === "btn-call") {
-                el.href = "tel:" + data["tel"]; 
-                el.target = "_blank";
-                el.textContent = "Gọi ngay";
-              }
-              else if(key === "zalo") {
-                el.href = "https://zalo.me/" + data["tel"]; // lấy số từ tel
-                el.target = "_blank";
-                el.textContent = "Nhắn Zalo";
-              }
-              else {
-                el.href = data[key];
-                el.textContent = data[key];
-              }
-            } else {
-              el.textContent = data[key];
-            }
-          }
-        });
-      })
-      .catch(err => console.error("Load JSON thất bại:", err));
-  </script>
+    if (el.tagName === "A") {
+      // Nếu là link tel hoặc zalo
+      if (key === "tel") {
+        el.href = "tel:" + data[key];
+        el.textContent = data[key];
+      } else if (key === "zalo") {
+        el.href = "https://zalo.me/" + data[key];
+        el.textContent = "Nhắn Zalo";
+      } else {
+        el.href = data[key];
+        el.textContent = data[key];
+      }
+    } else {
+      el.textContent = data[key];
+    }
+  });
+</script>
 </body>
 </html>
