@@ -8,8 +8,8 @@
   "tel": "0886320720",
   "aircon_waterheater": "Đầy đủ",
   "area": "20 m²",
-  "price_single": 1600000,
-  "price_double": 1700000,
+  "price_single": "",
+  "price_double": ""
   "parking": "Hành lang rộng 2m thoải mái",
   "time": "Tự do",
   "cctv": "24/7",
@@ -18,4 +18,5 @@
   "btn-call": "",
   
 }
+
 
