@@ -1,5 +1,5 @@
 {
-    "ac": "Đầy đủ",
+    "aircon_waterheater": "Đầy đủ",
     "area": "20 m²",
     "available_num": "Còn trống 2/5 phòng",
     "cctv": "24/7",
@@ -12,6 +12,5 @@
     "tel": "0886320720",
     "time": "Tự do",
     "water": "15.000 đ/m³",
-    "wifi": "Free",
-    "zalo": "https://zalo.me/0886320720"
+    "wifi": "Free"
 }
