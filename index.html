@@ -1,287 +1,415 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Phòng trọ cho thuê - Gần trung tâm, sạch sẽ, an ninh</title>
-  <meta name="description" content="Phòng trọ giá tốt, đầy đủ tiện nghi, gần chợ và trường học. Bấm để xem hình và chỉ đường Google Maps." />
+db_file = "/content/drive/MyDrive/Dau_tu/data/inn.db"
+file_price = "/content/drive/MyDrive/Dau_tu/data/prices.json"
+file_room = "/content/drive/MyDrive/Dau_tu/data/rooms.json"
+file_tenant = "/content/drive/MyDrive/Dau_tu/data/tenants.json"
+file_report = "/content/drive/MyDrive/Dau_tu/report/rent_report.xlsx"   
 
-  <!-- Open Graph for sharing -->
-  <meta property="og:title" content="Phòng trọ cho thuê - Giá tốt" />
-  <meta property="og:description" content="Phòng sạch, giờ giấc tự do, có chỗ để xe. Xem ảnh và định vị Google Maps." />
-  <meta property="og:type" content="article" />
-  <meta property="og:image" content="https://drive.google.com/uc?export=view&id=REPLACE_HERO_FILE_ID" />
+# =============================================================================
+# mount drive folder
+# =============================================================================
+def safe_mount_drive(mount_point="/content/drive"):
+    import os
+    import io
+    import contextlib
+    from google.colab import drive
+    if not os.path.ismount(mount_point):
+        f = io.StringIO()
+        with contextlib.redirect_stdout(f):
+            drive.mount(mount_point)
+            
+# =============================================================================
+# calculate and gen report file
+# =============================================================================
+def run(*month_input):
+    import json
+    import pandas as pd
+    from datetime import datetime
 
-  <!-- Tailwind CSS CDN (có thể thay bằng CSS tự viết nếu không muốn dùng CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root { --radius: 16px; }
-    html, body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .card { border-radius: var(--radius); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
-    .badge { backdrop-filter: blur(6px); }
-    /* Simple lightbox */
-    #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 50; }
-    #lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-    #lightbox.show { display: flex; }
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-800">
-  <header class="max-w-5xl mx-auto p-4">
-    <div class="relative card overflow-hidden">
-      <!-- Ảnh hero từ Google Drive -->
-      <img class="w-full h-[260px] md:h-[380px] object-cover" 
-           src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/6.jpg" 
-           alt="Ảnh phòng trọ" />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-      <div class="absolute bottom-4 left-4 right-4 grid gap-3 md:flex md:items-end md:justify-between">
-        <div class="text-white">
-          <h1 class="text-2xl md:text-3xl font-semibold">
-            Phòng trọ Xuân Hòa • Gần các trường Sư phạm II, Việt Xô, Cơ Điện
-          </h1>
-          <p class="text-white/90 mt-1">
-            Cách: <span id="addr-text">Sư phạm II 800m, Việt Xô 600m, Cơ điện 500m.</span>
-          </p>
-        </div>
-        <!-- Nút giá -->
-        <div class="flex w-full md:w-auto justify-between gap-4">
-          <span class="flex-1 text-center badge inline-flex items-center justify-center bg-blue-700 text-white px-3 py-1.5 rounded-full text-sm">
-            <strong id="price" class="text-lg"></strong>
-          </span>
-        </div>
-      </div>
-    </div>
-  </header>
+    today = datetime.now()
+    this_month = datetime.strftime(today, "%Y%m")
 
+    safe_mount_drive()
 
-  <main class="max-w-5xl mx-auto p-4 grid md:grid-cols-3 gap-6">
-    <!-- Thông tin nhanh -->
-    <section class="card bg-white p-5 md:col-span-2">
-      <h2 class="text-xl font-semibold mb-3">Thông tin phòng</h2>
-      <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-        <li>Diện tích: <strong id="area">²</strong></li>
-        <li>Số lượng: <strong id="available_num"></strong><strong>/5 phòng</strong></li>
-        <li>Điện: <strong id="electric"></strong></li>
-        <li>Nước: <strong id="water"></strong></li>
-        <li>Wifi: <strong id="wifi"></strong></li>
-        <li>Giờ giấc: <strong id="time"></strong></li>
-        <li>Chỗ để xe: <strong id="parking"></strong></li>
-        <li>Nóng lạnh, Điều hòa: <strong id="aircon_waterheater"></strong></li>
-        <li>Camera an ninh: <strong id="cctv"></strong></li>
-      </ul>
-      <p class="mt-4">Không chung chủ. Tiện nghi nóng lạnh, điều hòa, giường, khu bếp, wifi, hành lang để xe phơi phóng rộng rãi, camera an ninh. Khu dân cư yên tĩnh, văn minh.</p>
-    </section>
+    price = query('prices')
+    electric_price = price[this_month]['electric_price']
+    water_price = price[this_month]['water_price']
 
-    <!-- Liên hệ -->
-    <aside class="card bg-white p-5 h-min">
-      <h2 class="text-xl font-semibold mb-3">Liên hệ</h2>
-      <div class="space-y-2 text-sm">
-        <p>Chủ nhà: <strong id="owner">Anh V/Anh</strong></p>
-        <p>Điện thoại: <a id="tel" class="text-blue-600 hover:underline" href="tel:0886320720">0886 320 720</a></p>
-        <p>Zalo: <a id="zalo" class="text-blue-600 hover:underline" target="_blank" href="https://zalo.me/0886320720">Nhắn Zalo</a></p>
-        <!-- <p>Messenger: <a id="messenger" class="text-blue-600 hover:underline" target="_blank" href="https://m.me/USERNAME_OR_PAGE_ID"> Nhắn tin Messenger </a> -->
-</p>
-      </div>
-      <div class="mt-4 grid grid-cols-2 gap-2">
-        <a target="_blank" rel="noopener" id="btn-call" href="tel:0886320720" class="text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">Gọi ngay</a>
-        <a target="_blank" rel="noopener" id="btn-map" href="https://maps.app.goo.gl/LKivNXrDmMo5RSo4A" class="text-center bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg">Mở Maps</a>
-      </div>
-    </aside>
+    data = query('rooms')
+    all_records = []
+    print(data.keys())
+    month_tocal = [this_month] 
+    if len(month_input) == 0:
+        ask = input("Month to calculate [add / all]: ")
+        if ask == 'all':
+            month_tocal = list(data.keys())
+        else:
+            while ask !=  '':
+                if ask in data.keys():
+                    month_tocal.append(ask)
+                else:
+                    print(ask, "not in data")
+                ask = input(" ")
+            for i in month_tocal:
+                try:
+                    datetime.strptime(i, "%Y%m")
+                except Exception as ex:
+                    print(ex)
+    month_tocal = list(set(month_tocal))
 
-    <!-- Thư viện ảnh từ Google Drive -->
-    <section class="card bg-white p-5 md:col-span-3">
-      <h2 class="text-xl font-semibold mb-3">Hình ảnh thực tế</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <!-- Thay REPLACE_FILE_ID_x bằng ID file ảnh trên Google Drive -->
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/6.jpg" alt="Đường 1" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/7.jpg" alt="Đường 2" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/1.jpg" alt="Hành lang" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/4.jpg" alt="Cửa ra" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/2.jpg" alt="Cửa vào" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/3.jpg" alt="Bếp gần" onclick="openLightbox(this.src)" />
-        <img class="w-full h-40 object-cover rounded-lg cursor-zoom-in" src="https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/5.jpg" alt="Vệ sinh" onclick="openLightbox(this.src)" />
-      </div>
-    </section>
+    def calculate(room,info):
+        if info["electric_start"] is not None and info["electric_end"] is not None:
+            electric_fee = (info["electric_end"] - info["electric_start"]) * electric_price
+        else:
+            electric_fee = 0
 
-    <!-- Bảng giá / loại phòng -->
-    <section class="card bg-white p-5 md:col-span-3">
-      <h2 class="text-xl font-semibold mb-3">Giá & loại phòng</h2>
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="bg-slate-100 text-slate-700">
-              <th class="text-left p-3">Loại phòng</th>
-              <th class="text-left p-3">Diện tích</th>
-              <th class="text-left p-3">Giá/tháng</th>
-              <th class="text-left p-3">Tình trạng</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b">
-              <td class="p-3">Ở 01 mình</td>
-              <td class="p-3">20 m²</td>
-              <td class="p-3" id="price_single"></td>
-              <td class="p-3"><span id="status_single" class ="px-2 py-1 rounded bg-emerald-100 text-emerald-700"></span></td>
-            </tr>
-            <tr class="border-b">
-              <td class="p-3">Ở 02 người</td>
-              <td class="p-3">20 m²</td>
-              <td class="p-3" id="price_double"></td>
-              <td class="p-3"><span id="status_double" class ="px-2 py-1 rounded bg-emerald-100 text-emerald-700"></span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+        if info["water_start"] is not None and info["water_end"] is not None:
+            water_fee = (info["water_end"] - info["water_start"]) * water_price
+        else:
+            water_fee = 0
 
-  <section class="card bg-white p-5 md:col-span-3 mt-6">
-    <h2 class="text-xl font-semibold mb-3">Chỉ đường từ ĐH Sư phạm II</h2>
-    <iframe 
-      src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d4511.56303053401!2d105.71950232601408!3d21.28401843042997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x3134fcdb779cefd7%3A0x31c6306b7388fe7a!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBTxrAgcGjhuqFtIEjDoCBO4buZaSAy!3m2!1d21.280951299999998!2d105.7258245!4m5!1s0x3134fdee8a4e71f1%3A0x6c40bffc1fcdf2eb!2zdHLGsOG7nW5nIG3huqdtIG5vbiBYdcOibiBIb8OgLCA3UFBDK0hQNSwgUGjGsOG7nW5nIFh1w6JuIEhvw6AsIFBow7pjIFnDqm4sIFbEqW5oIFBow7pjLCBWaeG7h3QgTmFt!3m2!1d21.286323!2d105.721797!5e1!3m2!1svi!2s!4v1755514213495!5m2!1svi!2s"
-      width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade">
-    </iframe>
-  </section>
+        rent_price = info["rent_price"] or 0
+        payment = info["payment"] or 0
 
-  <section class="card bg-white p-5 md:col-span-3 mt-6">
-    <h2 class="text-xl font-semibold mb-3">Chỉ đường từ Trường Việt Xô</h2>
-    <iframe 
-      src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d4511.442113683535!2d105.71978692601414!3d21.28795998042697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x3134fcce59588905%3A0xd1a864375c679093!2zVmnhu4d0IFjDtCBT4buRIDE!3m2!1d21.290205399999998!2d105.72057629999999!4m5!1s0x3134fdee8a4e71f1%3A0x6c40bffc1fcdf2eb!2zdHLGsOG7nW5nIG3huqdtIG5vbiBYdcOibiBIb8OgLCA3UFBDK0hQNSwgUGjGsOG7nW5nIFh1w6JuIEhvw6AsIFBow7pjIFnDqm4sIFbEqW5oIFBow7pjLCBWaeG7h3QgTmFt!3m2!1d21.286323!2d105.721797!5e1!3m2!1svi!2s!4v1755514352103!5m2!1svi!2s"
-      width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade">
-    </iframe>
-  </section>
+        bill = rent_price + electric_fee + water_fee
+        due_amount = bill - payment if  bill - payment > 0 else 0
 
-  <section class="card bg-white p-5 md:col-span-3 mt-6">
-    <h2 class="text-xl font-semibold mb-3">Chỉ đường từ Trường Cao đẳng Cơ điện Hà Nội</h2>
-    <iframe 
-      src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d2255.74752493261!2d105.71873763884001!3d21.286234495107106!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x3134fcc5f6a36101%3A0xe18acb5fe08e76df!2zVHLGsOG7nW5nIENhbyDEkOG6s25nIEPGoSDEkGnhu4duIEjDoCBO4buZaSBIQ0VN!3m2!1d21.2863597!2d105.7185746!4m5!1s0x3134fdee8a4e71f1%3A0x6c40bffc1fcdf2eb!2zdHLGsOG7nW5nIG3huqdtIG5vbiBYdcOibiBIb8OgLCA3UFBDK0hQNSwgUGjGsOG7nW5nIFh1w6JuIEhvw6AsIFBow7pjIFnDqm4sIFbEqW5oIFBow7pjLCBWaeG7h3QgTmFt!3m2!1d21.286323!2d105.721797!5e1!3m2!1svi!2s!4v1755514308885!5m2!1svi!2s"
-      width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade">
-    </iframe>
-  </section>
+        # Cập nhật vào dict
+        info["electric_fee"] = electric_fee
+        info["water_fee"] = water_fee
+        info["bill"] = bill
+        info["due_amount"] = due_amount
 
-  </main>
+        # Auto update status
+        if info["start_date"]:
+            info["status"] = "rented"
+        else:
+            info["status"] = "available"
 
-  <footer class="max-w-5xl mx-auto p-6 text-center text-sm text-slate-500">
-    © <span id="year"></span> Phòng trọ Xuân Hòa - Sư phạm II, Việt Xô, Cơ Điện
-  </footer>
+        return(info)
 
-   <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 flex-col items-center justify-center" style="display:none;" onclick="if(event.target.id==='lightbox'){closeLightbox()}">
-    <img id="lightbox-img" alt="preview" class="max-h-[80vh] max-w-[90vw] object-contain" />
-    <div id="lightbox-controls" class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-4 text-white">
-      <button onclick="prevImage(event)" class="bg-black/50 px-3 py-1 rounded-lg">⟨ Trước</button>
-      <span id="lightbox-counter" class="text-sm"></span>
-      <button onclick="nextImage(event)" class="bg-black/50 px-3 py-1 rounded-lg">Tiếp ⟩</button>
-    </div>
-  </div>
+    for month, rooms in data.items():
+        for room, info in rooms.items():
+            if month in month_tocal and info['status'] == 'rented':
+                info = calculate(room, info)
+                for fo in ['electric_fee','water_fee','rent_price','payment','bill','due_amount', 'status']:
+                    update('rooms', f'{month}.{room}.{fo}', info[fo])
+            all_records.append({
+                "month": month,
+                "room": room,
+                "tenant": info["phone"],
+                "rent_price": info["rent_price"],
+                "electric_fee": info["electric_fee"],
+                "water_fee": info["water_fee"],
+                "bill": info["bill"],
+                "payment": info["payment"],
+                "due_amount": info["due_amount"],
+                "status": info["status"],
+                # 👉 Thêm cột link Zalo
+                "zalo_link": f"https://zalo.me/{info['phone']}" if info.get("phone") else "",
+                "call": f'''href="tel:0886320720"{info['phone']}''' if info.get("phone") else ""
+            })
 
-  <script>
-    const images = Array.from(document.querySelectorAll("section img.cursor-zoom-in")).map(img => img.src);
-    let currentIndex = 0;
+    df = pd.DataFrame(all_records)
+    import pandas as pd
+    from openpyxl import load_workbook
+    from openpyxl.utils import get_column_letter
+    
+    # Xuất dữ liệu ra Excel bằng pandas + openpyxl
+    df = pd.DataFrame(all_records)
+    df.to_excel(file_report, index=False, sheet_name="Report", engine="openpyxl")
+    # Mở lại file bằng openpyxl để chỉnh sửa
+    wb = load_workbook(file_report)
+    ws = wb["Report"]
+    # Auto-fit độ rộng cột
+    for col in ws.columns:
+        max_len = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            if cell.value:
+                max_len = max(max_len, len(str(cell.value)))
+        ws.column_dimensions[col_letter].width = max_len + 2
+    # Định dạng tất cả cột số thành có phân cách hàng nghìn
+    for col in ws.iter_cols(min_row=2, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+        for cell in col:
+            if isinstance(cell.value, (int, float)):
+                cell.number_format = "#,##0"
+    # Cột cuối zalo_link thành hyperlink
+    last_col = ws.max_column
+    for row in range(2, ws.max_row + 1):
+        url = ws.cell(row=row, column=last_col).value
+        if url and str(url).startswith("http"):
+            ws.cell(row=row, column=last_col).hyperlink = url
+            ws.cell(row=row, column=last_col).value = "Zalo Link"   # hoặc giữ nguyên url nếu muốn
+            ws.cell(row=row, column=last_col).style = "Hyperlink"
+    # Lưu lại
+    wb.save(file_report)
+    
+    with open(file_room, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+    with open(file_price, "w", encoding="utf-8") as f:
+        json.dump(price, f, ensure_ascii=False, indent=4)
+    # with open(file_tenant, "w", encoding="utf-8") as f:
+    #     json.dump(tenant, f, ensure_ascii=False, indent=4)
 
-    const lb = document.getElementById('lightbox');
-    const lbImg = document.getElementById('lightbox-img');
-    const lbCounter = document.getElementById('lightbox-counter');
+    print("✅ created rent_report.xlsx,room.json,price.json")
 
-    function updateLightbox(){
-      lbImg.src = images[currentIndex];
-      lbCounter.textContent = `Ảnh ${currentIndex+1}/${images.length}`;
-    }
+# =============================================================================
+# gen link webpage
+# =============================================================================
+def view():
+    from IPython.display import HTML
+    url = "https://sites.google.com/view/trosupham2vietxocodien"
+    return(HTML(f'<a href="{url}" target="_blank">👉 Mở trang web</a>'))
 
-    function openLightbox(src){
-      currentIndex = images.indexOf(src);
-      lb.style.display = "flex";
-      updateLightbox();
-    }
+def query(table):
+    import sqlite3
+    import json
+    safe_mount_drive()
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"SELECT * FROM {table} WHERE id = 1")
+        x = json.loads(cursor.fetchone()[1])
+    except Exception as ex:
+        print(ex)
+    finally:
+        conn.close()
+    return(x)
 
-    function closeLightbox(){
-      lb.style.display = "none";
-    }
+# =============================================================================
+# ('prices', '202507.R3.electric_price', 3000/"abc")
+# =============================================================================
+def update(table, object_address, value_update):
+    import sqlite3
+    safe_mount_drive()
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"""
+                    UPDATE {table}
+                    SET data = json_set(data, '$.{object_address}', ?)
+                    WHERE id = 1
+                    """, (value_update,)
+            )
+        conn.commit()
+    except Exception as ex:
+        print(ex)
+    finally:
+        conn.close()
 
-    function nextImage(e){
-      e?.stopPropagation();
-      currentIndex = (currentIndex + 1) % images.length;
-      updateLightbox();
-    }
+# =============================================================================
+# creating db file by import direct from json: price, room, tenant
+# =============================================================================
+def import_json():
+    import json
+    import sqlite3
+    from google.colab import drive
+    safe_mount_drive()
+    with open(file_price) as file:
+        price = json.loads(file.read())
+    with open(file_room, "r") as f:
+            room = json.loads(f.read())
+    with open(file_tenant, "r") as f:
+            tenant = json.loads(f.read())
 
-    function prevImage(e){
-      e?.stopPropagation();
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-      updateLightbox();
-    }
+    conn = sqlite3.connect("/content/drive/MyDrive/Dau_tu/data/inn.db")
+    cursor = conn.cursor()
 
-    document.addEventListener("keydown", e=>{
-      if(lb.style.display === "flex"){
-        if(e.key==="Escape") closeLightbox();
-        if(e.key==="ArrowRight") nextImage();
-        if(e.key==="ArrowLeft") prevImage();
-      }
-    });
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS rooms (
+        id INTEGER PRIMARY KEY,
+        data JSON
+    )
+    """)
+    cursor.execute("INSERT INTO rooms (data) VALUES (?)", (json.dumps(room),))
+    conn.commit()
 
-    let touchStartX = 0;
-    lb.addEventListener("touchstart", e=>{ touchStartX = e.changedTouches[0].screenX; });
-    lb.addEventListener("touchend", e=>{
-      let diff = e.changedTouches[0].screenX - touchStartX;
-      if(diff > 50) prevImage();
-      if(diff < -50) nextImage();
-    });
-  </script>
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS prices (
+        id INTEGER PRIMARY KEY,
+        data JSON
+    )
+    """)
+    cursor.execute("INSERT INTO prices (data) VALUES (?)", (json.dumps(price),))
+    conn.commit()
 
-<script>
-const dataUrl = "https://raw.githubusercontent.com/hoangvietanh789-spec/phongtro_xuanhoa/main/data.json";
+    # cursor.execute("""
+    # CREATE TABLE IF NOT EXISTS tenants (
+    #     id INTEGER PRIMARY KEY,
+    #     data JSON
+    # )
+    # """)
+    # cursor.execute("INSERT INTO tenants (data) VALUES (?)", (json.dumps(tenant),))
+    # conn.commit()
+    conn.close()
 
-fetch(dataUrl)
-  .then(res => res.json())
-  .then(data => {
-    const basePrice = data.price;
-    const priceSingle = basePrice;
-    const priceDouble = basePrice + 100000;
+# =============================================================================
+# insert water and electricity consumed
+# =============================================================================
+def dien_nuoc():
+    from datetime import datetime
+    today = datetime.now()
+    this_month = datetime.strftime(today, "%Y%m")
+    mes_elec = f"Công tơ ĐIỆN tháng {this_month}: "
+    mes_water = f"Công tơ NƯỚC tháng {this_month}: "
+    room = input("Room: ").upper()
+    rooms = query('rooms')[this_month]
+    if room not in rooms:
+        print("Room not valid")
+        return
+    elif rooms[room]['status'] != 'rented':
+        print("Room not rented yet")
+        return
+    elec_end = int(input(mes_elec))
+    water_end = int(input(mes_water))
+    elec_end = elec_end if elec_end > rooms[room]['electric_start'] else rooms[room]['electric_start']
+    water_end = water_end if water_end > rooms[room]['water_end'] else rooms[room]['water_end']
+    update('rooms', f'{this_month}.{room}.electric_end', elec_end)
+    update('rooms', f'{this_month}.{room}.water_end', water_end)
+    print("done")
 
-    // Table giá
-    document.getElementById("price_single").textContent = priceSingle.toLocaleString("vi-VN") + " đ";
-    document.getElementById("price_double").textContent = priceDouble.toLocaleString("vi-VN") + " đ";
+# =============================================================================
+# insert customer payment
+# =============================================================================
+def pay():
+    from datetime import datetime
+    today = datetime.now()
+    this_month = datetime.strftime(today, "%Y%m")
+    room = input("Room: ").upper()
+    rooms = query('rooms')[this_month]
+    if room not in rooms:
+        print("Room not valid")
+        return
+    elif rooms[room]['status'] != 'rented':
+        print("Room not rented yet")
+        return
+    paid = rooms[room]['payment']
+    if paid != 0:
+        message = f"{room} already paid: {paid:,.0f}\n[y] to continue: "
+        ask = input(message)
+        if ask.upper() != "Y":
+            return
+    payment = paid + int(input("Payment: ")) 
+    update('rooms', f'{this_month}.{room}.payment', payment)
+    update('rooms', f'{this_month}.{room}.payment_date', datetime.strftime(today, "%d/%m/%Y"))
+    print(f"{room} marked paid {payment:,.0f} at {datetime.strftime(today, "%d/%m/%Y")}")
+    run(1) # (1) to avoid asking month
 
-    // Giá nổi bật
-    function formatPriceHighlight(price){
-      const millions = Math.floor(price / 1000000);
-      const hundredThousands = Math.round((price % 1000000) / 100000);
-      return `${millions}tr${hundredThousands}`;
-    }
-    const priceText = (data.available_num > 0) 
-      ? `${formatPriceHighlight(priceSingle)}/tháng`
-      : `${formatPriceHighlight(priceSingle)}/tháng - Tạm hết`;
+# =============================================================================
+# add new room by insert data clob
+# =============================================================================
+def add_room(room_data, record_id=1):
+    import json
+    import sqlite3
+    from datetime import datetime
 
-    const priceEl = document.getElementById("price");
-    priceEl.textContent = priceText;
+    today = datetime.now()
+    this_month = datetime.strftime(today, "%Y%m")
+    
+    month = input("Month: ")
+    month = month if month != '' else this_month
+    room_name = input("Room: ")
+    if room_name not in ["R1", "R2", "R3", "R4", "R5", "R11", "R22", "R33", "R44", "R55"]:
+        print(room_name, 'not in ["R1", "R2", "R3", "R4", "R5", "R11", "R22", "R33", "R44", "R55"]')
+        return
+    
+    safe_mount_drive()
+    conn = sqlite3.connect(db_file)
+    sql = f"""
+        UPDATE rooms
+        SET data = json_set(data, '$.{month}.{room_name}', json(?))
+        WHERE id = ?
+    """
+    conn.execute(sql, (json.dumps(room_data), record_id))
+    conn.commit()
+    conn.close()
 
-    // Trạng thái phòng
-    const statusText = (data.available_num > 0) ? "Còn phòng" : "Tạm hết";
-    const statusClass = (data.available_num > 0) ? "px-2 py-1 rounded bg-emerald-100 text-emerald-700" : "px-2 py-1 rounded bg-amber-100 text-amber-700";
-    document.getElementById("status_single").textContent = statusText;
-    document.getElementById("status_single").className = statusClass;
-    document.getElementById("status_double").textContent = statusText;
-    document.getElementById("status_double").className = statusClass;
-
-    // Gán thông tin chi tiết
-    document.getElementById("area").textContent = data.area;
-    document.getElementById("available_num").textContent = data.available_num;
-    document.getElementById("wifi").textContent = data.wifi;
-    document.getElementById("electric").textContent = data.electric.toLocaleString("vi-VN") + " đ/kWh";
-    document.getElementById("water").textContent = data.water.toLocaleString("vi-VN") + " đ/m³";
-    document.getElementById("time").textContent = data.time;
-    document.getElementById("parking").textContent = data.parking;
-    document.getElementById("aircon_waterheater").textContent = data.aircon_waterheater;
-    document.getElementById("cctv").textContent = data.cctv;
-    document.getElementById("owner").textContent = data.owner;
-    document.getElementById("tel").href = "tel:" + data.tel;
-    document.getElementById("tel").textContent = data.tel;
-    document.getElementById("btn-call").href = "tel:" + data.tel;
-    document.getElementById("zalo").href = "https://zalo.me/" + data.tel;
-  })
-  .catch(err => console.error("Không tải được dữ liệu JSON:", err));
-</script>
-</body>
-</html>
+# =============================================================================
+# create inform every new month from previous one    
+# =============================================================================
+def new_month():
+    import copy
+    from datetime import datetime
+    from dateutil.relativedelta import relativedelta
+    data = query("rooms")
+    last_month = max(data.keys())   
+    new_month = datetime.strftime(datetime.now(), "%Y%m")
+    
+    if last_month ==  new_month:
+        print(new_month, "exists")
+        return
+    data[new_month] = copy.deepcopy(data[last_month])
+    
+    for room, info in data[new_month].items():
+        if room in ["R1", "R2", "R3", "R4", "R5"]:
+            info["start_date"] = datetime.strftime(datetime.strptime(info["start_date"], "%d/%m/%Y") + relativedelta(months=1) , "%d/%m/%Y") if info["start_date"] is not None else None
+            info["end_date"] = datetime.strftime(datetime.strptime(info["end_date"], "%d/%m/%Y") + relativedelta(months=1),"%d/%m/%Y") if info["end_date"] is not None else None
+            info["due_date"]   = datetime.strftime(datetime.strptime(info["due_date"], "%d/%m/%Y") + relativedelta(months=1),"%d/%m/%Y") if info["due_date"] is not None else None
+            info["electric_start"] = info["electric_end"]  
+            info["electric_end"]   = None  
+            info["electric_fee"]   = None
+            info["water_start"]    = info["water_end"]  
+            info["water_end"] = None  
+            info["water_fee"] = None
+            info["bill"]      = None
+            info["payment"]      = None if info['bill'] is None and info['payment'] is None else info['payment'] - info['bill']
+            info["payment_date"] = None if info["payment"] is None else info["payment_date"]
+            info["due_amount"]   = None
+    safe_mount_drive()
+    import json
+    import sqlite3
+    conn = sqlite3.connect(db_file)
+    sql = """
+        UPDATE rooms
+        SET data = json_set(data, '$.' || ?, json(?))
+        WHERE id = ?
+    """
+    conn.execute(sql, (new_month, json.dumps(data[new_month]), 1))
+    conn.commit()
+    conn.close()
+    print(new_month, "initialized. Reset any room: ")
+    room_reset = input().upper()
+    if room_reset == '':
+        return
+    if room_reset not in ["R1", "R2", "R3", "R4", "R5"]:
+        print(room_reset, 'not in ["R1", "R2", "R3", "R4", "R5"]')
+        return
+    reset_room(room_reset) 
+    
+# =============================================================================
+# reset info of room for fresh
+# =============================================================================
+def reset_room(*room_reset):
+    if len(room_reset) == 0:
+        room = input("Room to reset: ").upper()
+    else: 
+        room = room_reset[0]
+    if room not in ["R1", "R2", "R3", "R4", "R5", "R11", "R22", "R33", "R44", "R55"]:
+        print(room, 'not in ["R1", "R2", "R3", "R4", "R5", "R11", "R22", "R33", "R44", "R55"]')
+        return
+    from datetime import datetime
+    this_month = datetime.strftime(datetime.now(), "%Y%m")
+    data = query("rooms")[this_month][room]
+    for info in data:
+        if info == 'status':
+            data[info] = 'available'
+        elif info == 'electric_start':
+            data[info] = data[info] if data['electric_end'] is None else data['electric_end']
+        elif info == 'water_start':
+            data[info] = data[info] if data['water_end'] is None else data['water_end']
+        else:
+            data[info] = None
+    safe_mount_drive()
+    import sqlite3
+    import json
+    conn = sqlite3.connect(db_file)
+    sql = f"""
+        UPDATE rooms
+        SET data = json_set(data, '$.{this_month}.{room}', json(?))
+        WHERE id = ?
+    """
+    conn.execute(sql, (json.dumps(data), 1))
+    conn.commit()
+    conn.close()
+    print(room, "already reset")
+    
