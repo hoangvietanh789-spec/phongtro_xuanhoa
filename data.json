@@ -1,5 +1,5 @@
 {
-  "available_num": 0,
+  "available_num": 1,
   "price": 1600000,
   "price_add": 100000,
   "electric": 3000,
@@ -15,6 +15,7 @@
   "cctv": "24/7",
   "wifi": "Free"
 }
+
 
 
 
